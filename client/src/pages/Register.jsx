@@ -3,7 +3,11 @@ import axios from 'axios'
 import { toast } from 'react-toastify'
 import { useNavigate } from 'react-router-dom'
 
+import { useDispatch } from 'react-redux'
+import { addUser } from '../redux/slices/userSlice'
+
 const Register = () => {
+  const dispatch = useDispatch()
   const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -28,6 +32,9 @@ const Register = () => {
         email,
         password,
       })
+      dispatch(
+        addUser({ username: username, email: email, password: password })
+      )
       toast.success('Registration Successful', toastProperty)
       navigate('/login')
     } catch (err) {

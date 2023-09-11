@@ -1,33 +1,12 @@
-import React from 'react'
-import { toast } from 'react-toastify'
-import axios from 'axios'
-import { useNavigate } from 'react-router-dom'
+import React, { useState } from 'react'
+import { Link } from 'react-router-dom'
+import { CreateTask } from '../components/components'
 
-const Header = ({ setIsLoggedIn, isLoggedIn }) => {
-  const navigate = useNavigate()
+const Header = ({ isLoggedIn, handleLogout }) => {
+  const [showModal, setShowModal] = useState(false)
 
-  const toastProperty = {
-    position: 'top-right',
-    autoClose: 3000,
-    hideProgressBar: false,
-    closeOnClick: true,
-    pauseOnHover: false,
-    draggable: false,
-    progress: undefined,
-    theme: 'light',
-  }
-
-  const handleLogout = (e) => {
-    e.preventDefault()
-    try {
-      axios.get(`${import.meta.env.VITE_BASE_URL}/logout`)
-      toast.success('Logout Successful', toastProperty)
-      setIsLoggedIn(false)
-      navigate('/login')
-    } catch (error) {
-      console.log(error)
-      toast.error('Error logging out', toastProperty)
-    }
+  const openModal = () => {
+    setShowModal(true)
   }
 
   return (
@@ -35,16 +14,21 @@ const Header = ({ setIsLoggedIn, isLoggedIn }) => {
       <nav className='flex items-center justify-between flex-wrap bg-slate-600 p-5'>
         <div className='w-full block flex-grow lg:flex lg:items-center lg:w-auto'>
           <div className='text-sm lg:flex-grow'>
-            <a
-              href='/'
+            <Link
+              to='/'
               className='block lg:inline-block lg:mt-0 text-white hover:text-white mr-4'>
               Home
-            </a>
-            <a
-              href='#'
+            </Link>
+            <button
+              onClick={openModal}
               className='block mt-4 lg:inline-block lg:mt-0 text-white hover:text-white mr-4'>
               Create Task
-            </a>
+            </button>
+            <CreateTask
+              isLoggedIn={isLoggedIn}
+              showModal={showModal}
+              setShowModal={setShowModal}
+            />
             {!isLoggedIn ? (
               <>
                 <a
