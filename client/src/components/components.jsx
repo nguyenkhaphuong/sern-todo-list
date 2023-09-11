@@ -1,3 +1,4 @@
 export { default as Header } from './Header'
 export { default as Footer } from './Footer'
 export { default as ToDoList } from './ToDoList'
+export { default as CreateTask } from './CreateTask'
