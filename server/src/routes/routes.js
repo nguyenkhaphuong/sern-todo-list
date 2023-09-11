@@ -12,6 +12,17 @@ exports.userRoutes = (app, db) => {
       saveUninitialized: true,
     })
   )
+
+  // handle user logout
+  app.get('/logout', async (req, res) => {
+    req.session.destroy((err) => {
+      if (err) {
+        return res.status(500).send({ message: 'Error Destroying Session' })
+      }
+      res.status(200).send({ message: 'Session Destroyed Successfully' })
+    })
+  })
+
   // handle user registration
   app.post('/register', async (req, res) => {
     const saltRounds = 10
@@ -24,48 +35,53 @@ exports.userRoutes = (app, db) => {
       const sql =
         'INSERT INTO users (username, email, password) VALUES (?, ?, ?)'
       db.query(sql, [username, email, hashedPassword], (err) => {
-        if (err) throw err
+        if (err) {
+          return res.status(500).send({ message: 'Error registering user' })
+        }
         res.status(200).send({ message: 'Registration Successful' })
       })
     } catch (error) {
-      return res.status(500).send({ message: 'Error Registering User' })
+      res.status(500).send({ message: 'Error Registering User' })
     }
   })
 
   // handle user login
   app.post('/login', async (req, res) => {
-    const { email, password } = req.body
+    try {
+      const { email, password } = req.body
 
-    const sql = 'SELECT * FROM users WHERE email = ? AND password = ?'
-    db.query(sql, [email, password], (err, result) => {
-      if (err || result.length === 0) {
-        throw err
-      }
+      const sql = 'SELECT * FROM users WHERE email = ?'
+      db.query(sql, [email, password], async (err, result) => {
+        if (err) {
+          return res.status(500).send({ message: 'Login Failed' })
+        }
 
-      const user = result[0]
-      const isPasswordValid = bcrypt.compareSync(password, user.password)
+        if (result.length === 0) {
+          return res.status(401).send({ message: 'User not found' })
+        }
 
-      if (!isPasswordValid) {
-        return res.status(401).send({ message: 'Invalid email or password' })
-      }
+        const user = result[0]
+        const isPasswordValid = await bcrypt.compareSync(
+          password,
+          user.password
+        )
 
-      const token = jwt.sign({ id: user.id }, process.env.SECRET_KEY, {
-        expiresIn: '1h',
+        if (!isPasswordValid) {
+          return res.status(401).send({ message: 'Invalid email or password' })
+        }
+
+        const token = jwt.sign(
+          { id: user.id, email: user.email },
+          process.env.SECRET_KEY,
+          {
+            expiresIn: '1h',
+          }
+        )
+
+        res.status(200).send({ token })
       })
-
-      res.send(token)
-      res.send('Login Successful')
-    })
-  })
-
-  // handle user logout
-  app.get('/logout', (req, res) => {
-    req.session.destroy((err) => {
-      if (err) {
-        return res.status(500).send({ message: 'Error Destroying Session' })
-      }
-      res.clearCookie('connect.sid')
-      res.send('Logout Successful')
-    })
+    } catch (err) {
+      res.status(500).send({ message: 'Error Registering User' })
+    }
   })
 }
