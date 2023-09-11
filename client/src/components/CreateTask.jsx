@@ -59,7 +59,7 @@ const CreateTask = ({ isLoggedIn, showModal, setShowModal }) => {
             <div className='form-group mb-4'>
               <input
                 className='w-full p-6 rounded-xl'
-                type='title'
+                type='text'
                 name='title'
                 value={title}
                 placeholder='Title'
@@ -70,7 +70,7 @@ const CreateTask = ({ isLoggedIn, showModal, setShowModal }) => {
             <div className='form-group mb-4'>
               <input
                 className='w-full p-6 rounded-xl'
-                type='description'
+                type='text'
                 name='description'
                 value={description}
                 placeholder='Task Description'
@@ -80,7 +80,7 @@ const CreateTask = ({ isLoggedIn, showModal, setShowModal }) => {
             <div className='form-group mb-4'>
               <input
                 className='w-full p-6 rounded-xl'
-                type='priority'
+                type='text'
                 name='priority'
                 value={priority}
                 placeholder='Priority'
@@ -91,7 +91,7 @@ const CreateTask = ({ isLoggedIn, showModal, setShowModal }) => {
             <div className='form-group mb-4'>
               <input
                 className='w-full p-6 rounded-xl'
-                type='status'
+                type='text'
                 name='status'
                 value={status}
                 placeholder='Task Status'
