@@ -45,7 +45,7 @@ const Login = ({ handleLogin }) => {
                 value='Login'
               />
             </div>
-            <p>
+            <p className='sm:text-md md:text-md lg:text-lg'>
               Don't have an account?
               <a
                 className='text-gray-600 text-md font-medium ml-1'
