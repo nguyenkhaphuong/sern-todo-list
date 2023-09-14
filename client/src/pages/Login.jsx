@@ -7,7 +7,7 @@ const Login = ({ handleLogin }) => {
   return (
     <div>
       <div className='bg-white'>
-        <div className='container mx-auto lg:w-1/2 md:w-3/4 sm:w-3/4 text-center my-24 bg-slate-200 border border-spacing-2 px-5 py-6 rounded-3xl'>
+        <div className='container mx-auto lg:w-1/2 w-3/4 text-center my-24 bg-slate-200 border border-spacing-2 px-5 py-6 rounded-3xl'>
           <h4 className='text-4xl font-semibold mb-2'>Login</h4>
           <span className='text-gray-500'>Login to your account</span>
           <form
