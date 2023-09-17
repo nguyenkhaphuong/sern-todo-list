@@ -23,6 +23,40 @@ exports.userRoutes = (app, db) => {
     })
   })
 
+  // handle user login
+  app.post('/login', async (req, res) => {
+    try {
+      const { email, password } = req.body
+
+      const sql = 'SELECT * FROM users WHERE email = ?'
+      db.query(sql, [email], async (err, result) => {
+        if (err) {
+          return res.status(500).send({ message: 'Login Failed' })
+        }
+
+        if (result.length === 0) {
+          return res.status(401).send({ message: 'User not found' })
+        }
+
+        const user = result[0]
+        const isPasswordValid = bcrypt.compareSync(password, user.password)
+
+        if (!isPasswordValid) {
+          return res.status(401).send({ message: 'Invalid email or password' })
+        }
+
+        const token = jwt.sign(
+          { id: user.id, email: user.email, username: user.username },
+          process.env.SECRET_KEY
+        )
+
+        res.status(200).send({ token })
+      })
+    } catch (err) {
+      res.status(500).send({ message: 'Error Registering User' })
+    }
+  })
+
   // handle user registration
   app.post('/register', async (req, res) => {
     const saltRounds = 10
@@ -44,44 +78,95 @@ exports.userRoutes = (app, db) => {
       res.status(500).send({ message: 'Error Registering User' })
     }
   })
+}
 
-  // handle user login
-  app.post('/login', async (req, res) => {
-    try {
-      const { email, password } = req.body
+exports.tasksRoutes = (app, db) => {
+  // Middleware to check and authenticate token
+  const authenticateToken = async (req, res, next) => {
+    //Convert header keys to lowercase
+    const headers = Object.keys(req.headers).reduce((acc, key) => {
+      acc[key.toLowerCase()] = req.headers[key]
+      return acc
+    }, {})
 
-      const sql = 'SELECT * FROM users WHERE email = ?'
-      db.query(sql, [email, password], async (err, result) => {
-        if (err) {
-          return res.status(500).send({ message: 'Login Failed' })
-        }
+    const bearerHeader = headers['authorization']
 
-        if (result.length === 0) {
-          return res.status(401).send({ message: 'User not found' })
-        }
-
-        const user = result[0]
-        const isPasswordValid = await bcrypt.compareSync(
-          password,
-          user.password
-        )
-
-        if (!isPasswordValid) {
-          return res.status(401).send({ message: 'Invalid email or password' })
-        }
-
-        const token = jwt.sign(
-          { id: user.id, email: user.email },
-          process.env.SECRET_KEY,
-          {
-            expiresIn: '1h',
-          }
-        )
-
-        res.status(200).send({ token })
-      })
-    } catch (err) {
-      res.status(500).send({ message: 'Error Registering User' })
+    if (typeof bearerHeader === 'undefined') {
+      return res.status(401).send('Access denied')
     }
+
+    const bearer = bearerHeader.split(' ')
+    const bearerToken = bearer[1]
+
+    jwt.verify(bearerToken, process.env.SECRET_KEY, (err, decoded) => {
+      if (err) {
+        return res.status(403).send('Invalid token')
+      }
+
+      req.user = decoded.id
+      next()
+    })
+  }
+
+  //Retrieve the tasks from the database
+  app.get('/tasks', authenticateToken, (req, res) => {
+    const userId = req.user
+    const sql =
+      'SELECT * FROM tasks WHERE user_id = ? ORDER BY FIELD(priority,"high","medium","normal")'
+
+    db.query(sql, [userId], (err, results) => {
+      if (err) {
+        return res.status(500).json({ error: 'Failed to retrieve tasks' })
+      }
+      res.status(200).send(results)
+    })
+  })
+
+  //Add new task
+  app.post('/tasks', authenticateToken, (req, res) => {
+    const { title, description, priority, status } = req.body
+    const userID = req.user
+    const sql =
+      'INSERT INTO tasks (title, description, priority, status, user_id) VALUES (?, ?, ?, ?, ?)'
+
+    db.query(
+      sql,
+      [title, description || null, priority, status, userID],
+      (err) => {
+        if (err) {
+          console.error(err)
+          return res.status(500).json({ error: 'Failed to add task' })
+        }
+        res.send('Task added successfully')
+      }
+    )
+  })
+
+  //Update the task
+  app.put('/tasks/:id', authenticateToken, (req, res) => {
+    const { id } = req.params
+    const { title, priority, description, status } = req.body
+    const sql =
+      'UPDATE tasks SET title = ?, priority = ?, description = ?, status = ? WHERE id = ?'
+
+    db.query(sql, [title, priority, description || null, status, id], (err) => {
+      if (err) {
+        throw err
+      }
+      res.send('Task updated successfully')
+    })
+  })
+
+  //Delete the task
+  app.delete('/tasks/:id', authenticateToken, (req, res) => {
+    const { id } = req.params
+    const sql = 'DELETE FROM tasks WHERE id = ? AND user_id = ?'
+
+    db.query(sql, [id], (err) => {
+      if (err) {
+        throw err
+      }
+      res.send('Task deleted successfully')
+    })
   })
 }

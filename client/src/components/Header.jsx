@@ -43,11 +43,13 @@ const Header = ({ isLoggedIn, handleLogout }) => {
                 </a>
               </>
             ) : (
-              <button
-                className='block w-fit lg:inline-block text-md px-4 py-2 border rounded text-white border-white hover:border-transparent hover:bg-red-500 mt-5 lg:mt-0'
-                onClick={handleLogout}>
-                Logout
-              </button>
+              <>
+                <button
+                  className='block w-fit lg:inline-block text-md px-4 py-2 border rounded text-white border-white hover:border-transparent hover:bg-red-500 mt-5 lg:mt-0'
+                  onClick={handleLogout}>
+                  Logout
+                </button>
+              </>
             )}
           </div>
         </div>

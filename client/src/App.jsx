@@ -7,12 +7,14 @@ import { Header, Footer } from './components/components'
 
 import { ToastContainer, toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
+
 import { useSelector, useDispatch } from 'react-redux'
 
 import { login, logout } from './redux/slices/authSlice'
 
 function App() {
   const isLoggedIn = useSelector((state) => state.auth.isLoggedIn)
+  const tasks = useSelector((state) => state.tasks)
   const dispatch = useDispatch()
   const navigate = useNavigate()
 
@@ -38,26 +40,22 @@ function App() {
 
   const handleLogin = async ({ email, password }, e) => {
     e.preventDefault()
-    try {
-      await axios.post(`${serverUrl}/login`, {
+
+    await axios
+      .post(`${serverUrl}/login`, {
         email,
         password,
       })
-      dispatch(login())
-      localStorage.setItem(
-        'auth',
-        JSON.stringify({ email: email, password: password })
-      )
-      toast.success('Login Successful', toastProperty)
-      navigate('/')
-      localStorage.setItem(
-        'auth',
-        JSON.stringify({ email: email, password: password })
-      )
-    } catch (error) {
-      console.log(error)
-      toast.error('Error logging in', toastProperty)
-    }
+      .then((result) => {
+        localStorage.setItem('auth', result.data.token)
+        toast.success('Login Successful', toastProperty)
+        dispatch(login())
+        navigate('/')
+      })
+      .catch((err) => {
+        toast.error('Error logging in', toastProperty)
+        console.error(err.response)
+      })
   }
 
   const handleLogout = async (e) => {
@@ -78,7 +76,11 @@ function App() {
     <>
       <Header isLoggedIn={isLoggedIn} handleLogout={handleLogout} />
       <Routes>
-        <Route exact path='/' element={<Home isLoggedIn={isLoggedIn} />} />
+        <Route
+          exact
+          path='/'
+          element={<Home tasks={tasks} isLoggedIn={isLoggedIn} />}
+        />
         <Route path='/login' element={<Login handleLogin={handleLogin} />} />
         <Route path='/register' element={<Register />} />
         <Route path='*' element={<NotFound />} />

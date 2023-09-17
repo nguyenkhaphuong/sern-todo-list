@@ -1,7 +1,7 @@
 import React from 'react'
 import { ToDoList } from '../components/components'
 
-const Home = ({ isLoggedIn }) => {
+const Home = ({ isLoggedIn, tasks }) => {
   return (
     <div className='p-5'>
       {isLoggedIn ? (
@@ -9,7 +9,7 @@ const Home = ({ isLoggedIn }) => {
           <h1 className='lg:text-5xl font-bold py-2 md:text-4xl sm:text-3xl'>
             Dashboard
           </h1>
-          <ToDoList />
+          <ToDoList tasks={tasks} />
         </>
       ) : (
         <h1 className='lg:text-5xl font-bold py-2 5d:text-4xl sm:text-3xl'>

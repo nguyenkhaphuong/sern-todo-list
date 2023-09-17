@@ -6,9 +6,9 @@ import { addTask } from '../redux/slices/taskSlice'
 
 const CreateTask = ({ isLoggedIn, showModal, setShowModal }) => {
   const [title, setTitle] = React.useState('')
-  const [description, setDescription] = React.useState('' || null)
+  const [description, setDescription] = React.useState('')
   const [priority, setPriority] = React.useState('normal' || 'high' || 'medium')
-  const [status, setStatus] = React.useState('Todo' || 'Done')
+  const [status, setStatus] = React.useState('To do' || 'Done')
 
   const dispatch = useDispatch()
 
@@ -31,16 +31,23 @@ const CreateTask = ({ isLoggedIn, showModal, setShowModal }) => {
 
   const createTask = async (e) => {
     e.preventDefault()
-    try {
-      const newTask = { title, description, priority, status }
-      axios.post(`${serverUrl}/`, newTask)
-      dispatch(addTask(newTask))
-      toast.success('Task Added Successfully', toastProperty)
-      setShowModal(false)
-    } catch (error) {
-      toast.error('Failed to add task', toastProperty)
-      console.error(error)
-    }
+    const formData = { title, description, priority, status }
+    const token = localStorage.getItem('auth')
+
+    await axios
+      .post(`${serverUrl}/tasks`, formData, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      .then((result) => {
+        const newTask = result.data
+        dispatch(addTask(newTask))
+        toast.success('Task Added Successfully', toastProperty)
+        setShowModal(false)
+      })
+      .catch((err) => {
+        toast.error('Failed to add task', toastProperty)
+        console.error(err.response)
+      })
   }
 
   return (
