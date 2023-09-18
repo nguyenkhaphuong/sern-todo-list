@@ -137,7 +137,7 @@ exports.tasksRoutes = (app, db) => {
           console.error(err)
           return res.status(500).json({ error: 'Failed to add task' })
         }
-        res.send('Task added successfully')
+        res.json({ message: 'Task added successfully' })
       }
     )
   })
@@ -153,20 +153,22 @@ exports.tasksRoutes = (app, db) => {
       if (err) {
         throw err
       }
-      res.send('Task updated successfully')
+      res.json({ message: 'Task updated successfully' })
     })
   })
 
   //Delete the task
   app.delete('/tasks/:id', authenticateToken, (req, res) => {
     const { id } = req.params
+    const user_id = req.user
     const sql = 'DELETE FROM tasks WHERE id = ? AND user_id = ?'
 
-    db.query(sql, [id], (err) => {
+    db.query(sql, [id, user_id], (err) => {
       if (err) {
-        throw err
+        console.error(err)
+        return res.status(500).json({ error: 'Server error' })
       }
-      res.send('Task deleted successfully')
+      res.json({ message: 'Task deleted successfully' })
     })
   })
 }

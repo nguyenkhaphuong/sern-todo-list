@@ -12,7 +12,7 @@ const port = process.env.PORT || 3000
 
 const corsOptions = {
   origin: process.env.CLIENT_HOST,
-  methods: ['GET', 'POST'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
 }
 
 app.use(cors(corsOptions))
